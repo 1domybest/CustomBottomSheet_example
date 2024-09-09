@@ -45,11 +45,12 @@ class ContentViewModel: ObservableObject {
         self.bottomSheetOption?.minimumHeight = 0
         self.bottomSheetOption?.backgroundColor = .blue.opacity(0.5)
         self.bottomSheetOption?.availableOutTouchClose = true
+        self.bottomSheetOption?.hasKeyboard = true
         self.bottomSheetOption?.sheetColor = .red
         self.bottomSheetOption?.handlerColor = .black
         self.bottomSheetOption?.dragAvailable = true
         self.bottomSheetOption?.sheetMode = .custom
-        self.bottomSheetOption?.sheetHeight = 300
+        self.bottomSheetOption?.sheetHeight = 450
     }
     
     
