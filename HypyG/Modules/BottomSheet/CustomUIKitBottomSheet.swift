@@ -98,18 +98,17 @@ class CustomUIKitBottomSheet: UIViewController {
         let translation = gesture.translation(in: containerView)
         let velocity = gesture.velocity(in: containerView)
         
-        
+        if self.isKeyboardOpen {
+            self.dragGesture?.isEnabled = false
+            self.keyboardManager?.hideKeyboard()
+            return
+        }
         
         switch gesture.state {
         case .began:
             // 초기 터치 포인트와 시작 위치 저장
             DispatchQueue.main.async {
-                if self.isKeyboardOpen {
-                    self.keyboardManager?.hideKeyboard()
-                    return
-                } else {
-                    self.initialTouchPoint = containerView.frame.origin
-                }
+                self.initialTouchPoint = containerView.frame.origin
             }
             
         case .changed:
@@ -241,7 +240,7 @@ class CustomUIKitBottomSheet: UIViewController {
         var adjustedLength = min(max(newHeight, self.customUIKitBottomSheetOption.minimumHeight), self.customUIKitBottomSheetOption.maximumHeight)
         
         var contentSize:CGFloat = adjustedLength
-
+        
         if newHeight > UIScreen.main.bounds.height - (topSafeAreaSize + keyboardHeight) {
             // 넘어섰을때
             adjustedLength = UIScreen.main.bounds.height - topSafeAreaSize
@@ -291,6 +290,8 @@ extension CustomUIKitBottomSheet:KeyboardManangerProtocol {
             self.customModalPresentationController?.setKeyboardHeight(keyboardHeight: self.keyboardHeight)
             self.updateSheetHeight(newHeight: self.lastSizeOfScrollViewContentHeight)
             self.isKeyboardOpen = false
+            
+            self.dragGesture?.isEnabled = true
         }
         
     }
