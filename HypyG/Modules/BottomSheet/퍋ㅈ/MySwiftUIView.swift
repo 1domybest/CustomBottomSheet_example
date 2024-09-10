@@ -15,7 +15,9 @@ struct MySwiftUIView: View {
     @State var toggle: Bool = false
     @State var lastHeight: CGFloat = .zero
     @State var nowHeight: CGFloat = .zero
-    
+    @State var text: String = ""
+    @State var text2: String = ""
+    @State var text3: String = ""
     init(pk: UUID) {
         self.pk = pk
     }
@@ -25,6 +27,8 @@ struct MySwiftUIView: View {
                 Text("Hello, this is a SwiftUI View inside a UIViewController!")
                     .font(.title)
                     .padding()
+                
+                TextField("asdad", text: $text2)
                 
                 Button(action: {
                     nowHeight += 100
@@ -38,8 +42,11 @@ struct MySwiftUIView: View {
                         .cornerRadius(10)
                 }
                 
+                TextField("asdad", text: $text)
+                
                 Button(action: {
-                    CustomBottomSheetSingleTone.shared.hide(pk: pk)
+                    self.vm.keyboardManager?.hideKeyboard()
+//                    CustomBottomSheetSingleTone.shared.hide(pk: pk)
                 }) {
                     Text("닫기 버튼")
                         .font(.headline)
@@ -60,6 +67,9 @@ struct MySwiftUIView: View {
                         .cornerRadius(10)
                 }
                 
+                RoundedRectangle(cornerRadius: 20)
+                    .frame(width: 20, height: nowHeight)
+                
                 Button(action: {
                     CustomBottomSheetSingleTone.shared.hideAll()
                 }) {
@@ -70,8 +80,12 @@ struct MySwiftUIView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
+                
+                TextField("asdad", text: $text3)
+                
+                Spacer().frame(height: self.vm.keyboardHeight)
             }
-            .frame(height: nowHeight)
+            
         }
         .background(
             GeometryReader { geo -> Color in
@@ -83,14 +97,12 @@ struct MySwiftUIView: View {
                         CustomBottomSheetSingleTone.shared.updateSheetHeight(pk: pk, height: geo.size.height)
                     }
                     
-                    if nowHeight == .zero {
-                        nowHeight = geo.size.height
-                    }
-                    
                 }
-                return Color.clear
+                return Color.yellow
             }
         )
+        .ignoresSafeArea(.all)
+       
         
     }
 }
@@ -100,9 +112,11 @@ class MySwiftUIViewModel: ObservableObject {
     var bottomSheetOption: CustomUIKitBottomSheetOption?
     var navigationController: NavigationController? // 네비게이션
     var customUIKitBottomSheet: CustomUIKitBottomSheet?
-    
+    var keyboardManager: KeyboardManager?
+    @Published var keyboardHeight: CGFloat = .zero
     init() {
-      
+        self.keyboardManager = KeyboardManager()
+        self.keyboardManager?.setCallback(callback: self)
     }
     
     
@@ -128,4 +142,16 @@ class MySwiftUIViewModel: ObservableObject {
             CustomBottomSheetSingleTone.shared.show(customUIKitBottomSheetOption: bottomSheetModel, viewPk: pk)
         }
     }
+}
+
+extension MySwiftUIViewModel:KeyboardManangerProtocol {
+    func keyBoardWillShow(notification: NSNotification, keyboardHeight: CGFloat) {
+        self.keyboardHeight = keyboardHeight
+    }
+    
+    func keyBoardWillHide(notification: NSNotification) {
+        self.keyboardHeight = 0
+    }
+    
+    
 }

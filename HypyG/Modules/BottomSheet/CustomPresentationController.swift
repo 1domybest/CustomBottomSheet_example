@@ -89,7 +89,9 @@ class CustomModalPresentationController: UIPresentationController {
             if let containerView = self.containerView {
                 UIView.animate(withDuration: 0.3) {
                     self.presentedView?.frame = self.frameOfPresentedViewInContainerView
+                    containerView.setNeedsLayout()
                     containerView.layoutIfNeeded()
+                    
 
                 }
             }

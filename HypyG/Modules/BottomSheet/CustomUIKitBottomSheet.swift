@@ -17,7 +17,8 @@ class CustomUIKitBottomSheet: UIViewController {
     
     var handlerView: UIView?
     var topSafeAreaSize: CGFloat = .zero
-    
+    var scrollView: UIScrollView?
+    var hostingController: UIHostingController<AnyView>?
     init(bottomSheetModel: CustomUIKitBottomSheetOption) {
         self.customUIKitBottomSheetOption = bottomSheetModel
         // 핸들 가능 모드 custom, automatic , popover, pageSheet, formSheet
@@ -63,7 +64,8 @@ class CustomUIKitBottomSheet: UIViewController {
             setSheetView()
         }
         
-        setHostingView()
+//        setHostingView()
+        setupScrollView()
         
         if self.customUIKitBottomSheetOption.showHandler && self.customUIKitBottomSheetOption.availableHasHandle {
             setHandlerView()
@@ -146,6 +148,49 @@ class CustomUIKitBottomSheet: UIViewController {
         
     }
     
+    func setupScrollView() {
+        let scrollView = CustomScrollView()
+        scrollView.backgroundColor = .blue
+        scrollView.isScrollEnabled = true
+        scrollView.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.alwaysBounceVertical = true
+        scrollView.showsVerticalScrollIndicator = true
+        view.addSubview(scrollView)
+        
+        // 오토레이아웃 설정
+        NSLayoutConstraint.activate([
+            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+            scrollView.heightAnchor.constraint(equalTo: view.heightAnchor),
+            scrollView.widthAnchor.constraint(equalTo: view.widthAnchor)  // 가로 스크롤 방지
+        ])
+        
+        // SwiftUI View를 AnyView로 감싸서 사용
+        let swiftUIView = self.customUIKitBottomSheetOption.someView
+        let hostingController = UIHostingController(rootView: AnyView(swiftUIView))
+        
+        
+        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+        scrollView.addSubview(hostingController.view)
+        
+        // SwiftUI 뷰 크기를 스크롤 뷰 안에 맞추는 오토레이아웃 설정
+        NSLayoutConstraint.activate([
+            hostingController.view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+            hostingController.view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+            hostingController.view.topAnchor.constraint(equalTo: scrollView.topAnchor),
+            hostingController.view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+            hostingController.view.heightAnchor.constraint(equalTo: view.heightAnchor),
+            hostingController.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor)  // 가로 스크롤 방지
+        ])
+        
+        addChild(hostingController)
+        hostingController.didMove(toParent: self)
+        self.hostingController = hostingController
+        self.scrollView = scrollView
+    }
+    
     func setSheetView () {
         view.backgroundColor = self.customUIKitBottomSheetOption.sheetColor.getUIColor()
         
@@ -203,9 +248,14 @@ class CustomUIKitBottomSheet: UIViewController {
         if newHeight > UIScreen.main.bounds.height - topSafeAreaSize {
             adjustedLength = UIScreen.main.bounds.height
             self.removeHandlerView()
-            customModalPresentationController?.setSheetHeight(sheetHeight: adjustedLength)
-        } else {
-            customModalPresentationController?.setSheetHeight(sheetHeight: adjustedLength)
+        }
+        
+        customModalPresentationController?.setSheetHeight(sheetHeight: adjustedLength)
+        
+        print("스크롤뷰 \(scrollView?.frame) 콘텐트 높이 \(scrollView?.contentSize.height) 호스팅뷰 \(self.hostingController?.view.frame)")
+        DispatchQueue.main.async {
+            self.view.setNeedsLayout()
+            self.view.layoutIfNeeded()
         }
     }
     
@@ -219,3 +269,17 @@ extension CustomUIKitBottomSheet:UIViewControllerTransitioningDelegate {
 }
 
 
+class CustomScrollView: UIScrollView {
+    // 스크롤뷰가 스크롤이 비활성화된 상태에서 터치 이벤트를 하위 뷰로 전달하도록 설정
+    override func touchesShouldCancel(in view: UIView) -> Bool {
+        return true
+    }
+    
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        // 스크롤이 비활성화된 상태에서는 스크롤뷰 자체가 아닌 내부의 뷰가 이벤트를 받을 수 있도록 처리
+        if !self.isScrollEnabled {
+            return self.subviews.first?.hitTest(point, with: event)
+        }
+        return super.hitTest(point, with: event)
+    }
+}
