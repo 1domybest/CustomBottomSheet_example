@@ -13,6 +13,7 @@ class CustomModalPresentationController: UIPresentationController {
     
     // 추가적인 파라미터
     var bottomSheetModel: CustomUIKitBottomSheetOption
+    var keyboardHeight: CGFloat = .zero
     
     // 초기화 메서드
     init(presentedViewController: UIViewController, presenting presentingViewController: UIViewController?, bottomSheetModel: CustomUIKitBottomSheetOption) {
@@ -28,13 +29,26 @@ class CustomModalPresentationController: UIPresentationController {
 
     }
     
+    func setKeyboardHeight(keyboardHeight: CGFloat) {
+        self.keyboardHeight = keyboardHeight
+        
+//        // Notify that the layout should be updated
+//        if let containerView = self.containerView {
+//            UIView.animate(withDuration: 0.3) {
+//                self.presentedView?.frame = self.frameOfPresentedViewInContainerView
+//                containerView.setNeedsLayout()
+//                containerView.layoutIfNeeded()
+//            }
+//        }
+    }
+    
     // 바텀 시트 스타일을 위한 높이 설정
     override var frameOfPresentedViewInContainerView: CGRect {
         guard let containerView = containerView else { return .zero }
         let height: CGFloat = self.bottomSheetModel.sheetHeight
         return CGRect(
             x: 0,
-            y: containerView.bounds.height - height,
+            y: containerView.bounds.height - (height + keyboardHeight),
             width: containerView.bounds.width,
             height: height
         )

@@ -45,8 +45,8 @@ struct MySwiftUIView: View {
                 TextField("asdad", text: $text)
                 
                 Button(action: {
-                    self.vm.keyboardManager?.hideKeyboard()
 //                    CustomBottomSheetSingleTone.shared.hide(pk: pk)
+                    self.vm.keyboardManager.hideKeyboard()
                 }) {
                     Text("닫기 버튼")
                         .font(.headline)
@@ -82,8 +82,6 @@ struct MySwiftUIView: View {
                 }
                 
                 TextField("asdad", text: $text3)
-                
-                Spacer().frame(height: self.vm.keyboardHeight)
             }
             
         }
@@ -98,10 +96,11 @@ struct MySwiftUIView: View {
                     }
                     
                 }
-                return Color.yellow
+                return Color.clear
             }
         )
         .ignoresSafeArea(.all)
+        .ignoresSafeArea(.keyboard)
        
         
     }
@@ -112,11 +111,9 @@ class MySwiftUIViewModel: ObservableObject {
     var bottomSheetOption: CustomUIKitBottomSheetOption?
     var navigationController: NavigationController? // 네비게이션
     var customUIKitBottomSheet: CustomUIKitBottomSheet?
-    var keyboardManager: KeyboardManager?
-    @Published var keyboardHeight: CGFloat = .zero
+    var keyboardManager: KeyboardManager = KeyboardManager()
     init() {
-        self.keyboardManager = KeyboardManager()
-        self.keyboardManager?.setCallback(callback: self)
+       
     }
     
     
@@ -142,16 +139,4 @@ class MySwiftUIViewModel: ObservableObject {
             CustomBottomSheetSingleTone.shared.show(customUIKitBottomSheetOption: bottomSheetModel, viewPk: pk)
         }
     }
-}
-
-extension MySwiftUIViewModel:KeyboardManangerProtocol {
-    func keyBoardWillShow(notification: NSNotification, keyboardHeight: CGFloat) {
-        self.keyboardHeight = keyboardHeight
-    }
-    
-    func keyBoardWillHide(notification: NSNotification) {
-        self.keyboardHeight = 0
-    }
-    
-    
 }

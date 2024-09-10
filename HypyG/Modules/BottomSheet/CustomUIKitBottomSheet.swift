@@ -13,13 +13,22 @@ class CustomUIKitBottomSheet: UIViewController {
     var customUIKitBottomSheetOption: CustomUIKitBottomSheetOption
     var customModalPresentationController: CustomModalPresentationController?
     
+    private var keyboardHeightConstraint: NSLayoutConstraint?
+    
     private var initialTouchPoint: CGPoint?
     
-    var testView: UIView?
+    
     var handlerView: UIView?
     var topSafeAreaSize: CGFloat = .zero
     var scrollView: UIScrollView?
     var hostingController: UIHostingController<AnyView>?
+    
+    var keyboardManager: KeyboardManager?
+    var keyboardHeight: CGFloat = .zero
+    var isKeyboardOpen: Bool = false
+    
+    var dragGesture: UIPanGestureRecognizer?
+    
     init(bottomSheetModel: CustomUIKitBottomSheetOption) {
         self.customUIKitBottomSheetOption = bottomSheetModel
         // 핸들 가능 모드 custom, automatic , popover, pageSheet, formSheet
@@ -30,7 +39,8 @@ class CustomUIKitBottomSheet: UIViewController {
         if self.customUIKitBottomSheetOption.sheetMode == .custom {
             self.transitioningDelegate = self
         }
-        
+        self.keyboardManager = KeyboardManager()
+        self.keyboardManager?.setCallback(callback: self)
     }
     
     required init?(coder: NSCoder) {
@@ -74,49 +84,60 @@ class CustomUIKitBottomSheet: UIViewController {
     }
     
     func addGestureRecognizers() {
-         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
-         view.addGestureRecognizer(panGesture)
+         let dragGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanGesture(_:)))
+         view.addGestureRecognizer(dragGesture)
+        self.dragGesture = dragGesture
      }
      
     @objc func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
         guard let containerView = self.view else { return }
 
-        let translation = gesture.translation(in: containerView)
-        let velocity = gesture.velocity(in: containerView)
+        DispatchQueue.main.async {
+            let translation = gesture.translation(in: containerView)
+            let velocity = gesture.velocity(in: containerView)
 
-        switch gesture.state {
-        case .began:
-            // 초기 터치 포인트와 시작 위치 저장
-            initialTouchPoint = containerView.frame.origin
-
-        case .changed:
-            // 바텀 시트의 새로운 y 위치를 계산
-            if let initialTouchPoint = initialTouchPoint, translation.y > 0 {
-                // 드래그에 따라 y 위치를 업데이트 (최초 위치 + 드래그 이동 거리)
-                containerView.frame.origin.y = initialTouchPoint.y + translation.y
-            }
-
-        case .ended, .cancelled:
-            let velocityThreshold: CGFloat = 1000 // 속도 기준 값 설정 (점프 스냅에 사용)
-            let dismissThreshold: CGFloat = containerView.frame.height / 2 // 화면 하단으로 내려갈 기준 높이
-            // 빠르게 드래그하면 바텀 시트를 아래로 dismiss
-            if velocity.y > velocityThreshold {
-                dismissPresent()
-            }
-            // 느리게 드래그했을 때는 특정 위치(1/3 지점)를 넘으면 dismiss
-            else if translation.y > dismissThreshold {
-                dismissPresent()
-            }
-            // 그렇지 않으면 다시 제자리로 돌아가도록 애니메이션 처리
-            else {
-                UIView.animate(withDuration: 0.3) {
-                    containerView.frame.origin.y = self.initialTouchPoint?.y ?? 0
+            switch gesture.state {
+            case .began:
+                // 초기 터치 포인트와 시작 위치 저장
+                
+                if self.isKeyboardOpen {
+                    self.keyboardManager?.hideKeyboard()
+                } else {
+                    self.initialTouchPoint = containerView.frame.origin
                 }
-            }
+            case .changed:
+                if self.isKeyboardOpen { return }
+                // 바텀 시트의 새로운 y 위치를 계산
+                if let initialTouchPoint = self.initialTouchPoint, translation.y > 0 {
+                    // 드래그에 따라 y 위치를 업데이트 (최초 위치 + 드래그 이동 거리)
+                    containerView.frame.origin.y = initialTouchPoint.y + translation.y
+                }
 
-        default:
-            break
+            case .ended, .cancelled:
+                if self.isKeyboardOpen { return }
+                
+                let velocityThreshold: CGFloat = 1000 // 속도 기준 값 설정 (점프 스냅에 사용)
+                let dismissThreshold: CGFloat = containerView.frame.height / 2 // 화면 하단으로 내려갈 기준 높이
+                // 빠르게 드래그하면 바텀 시트를 아래로 dismiss
+                if velocity.y > velocityThreshold {
+                    self.dismissPresent()
+                }
+                // 느리게 드래그했을 때는 특정 위치(1/3 지점)를 넘으면 dismiss
+                else if translation.y > dismissThreshold {
+                    self.dismissPresent()
+                }
+                // 그렇지 않으면 다시 제자리로 돌아가도록 애니메이션 처리
+                else {
+                    UIView.animate(withDuration: 0.3) {
+                        containerView.frame.origin.y = self.initialTouchPoint?.y ?? 0
+                    }
+                }
+
+            default:
+                break
+            }
         }
+        
     }
 
     func setHostingView () {
@@ -152,7 +173,7 @@ class CustomUIKitBottomSheet: UIViewController {
     func setupScrollView() {
         let scrollView = CustomScrollView()
         scrollView.backgroundColor = .blue
-        scrollView.isScrollEnabled = true
+        scrollView.isScrollEnabled = false
         scrollView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.alwaysBounceVertical = true
         scrollView.showsVerticalScrollIndicator = true
@@ -169,78 +190,17 @@ class CustomUIKitBottomSheet: UIViewController {
         
         // SwiftUI View를 AnyView로 감싸서 사용
         let swiftUIView = self.customUIKitBottomSheetOption.someView
+        
         let hostingController = UIHostingController(rootView: AnyView(swiftUIView))
         hostingController.view.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: self.customUIKitBottomSheetOption.sheetHeight)
         
-//        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(hostingController.view)
-        
-        // SwiftUI 뷰 크기를 스크롤 뷰 안에 맞추는 오토레이아웃 설정
-//        NSLayoutConstraint.activate([1236
-//            hostingController.view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-//            hostingController.view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-//            hostingController.view.topAnchor.constraint(equalTo: scrollView.topAnchor),
-//            hostingController.view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-////            hostingController.view.heightAnchor.constraint(equalTo: view.heightAnchor),
-//            hostingController.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor)  // 가로 스크롤 방지
-//        ])
-//        NSLayoutConstraint.activate([
-//            hostingController.view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-//            hostingController.view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-//            hostingController.view.topAnchor.constraint(equalTo: scrollView.topAnchor),
-//            hostingController.view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-//            hostingController.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-//            hostingController.view.heightAnchor.constraint(equalTo: scrollView.heightAnchor)  // 스크롤이 가능하도록 테스트뷰 높이 설정
-//        ])
-        
-//        addChild(hostingController)
-//        hostingController.didMove(toParent: self)
+    
+        addChild(hostingController)
+        hostingController.didMove(toParent: self)
         self.hostingController = hostingController
         self.scrollView = scrollView
     }
-    
-//    func setupScrollView() {
-//        let scrollView = CustomScrollView()
-//        scrollView.isScrollEnabled = true
-//        scrollView.translatesAutoresizingMaskIntoConstraints = false
-//        scrollView.alwaysBounceVertical = true
-//        scrollView.showsVerticalScrollIndicator = true
-//        view.addSubview(scrollView)
-//        
-//        // 오토레이아웃 설정
-//        NSLayoutConstraint.activate([
-//            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-//            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-//            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
-//            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-//            scrollView.widthAnchor.constraint(equalTo: view.widthAnchor)  // 가로 스크롤 방지
-//        ])
-//        
-//        // 테스트용 UIView 생성 및 추가
-//        let testView = UIView()
-//        testView.backgroundColor = .red  // 시각적으로 확인할 수 있도록 색상 설정
-//        testView.translatesAutoresizingMaskIntoConstraints = false
-//        scrollView.addSubview(testView)
-//        
-//        // 오토레이아웃 설정 (contentSize가 커지도록 설정)
-//        NSLayoutConstraint.activate([
-//            testView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-//            testView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-//            testView.topAnchor.constraint(equalTo: scrollView.topAnchor),
-//            testView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-//            testView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
-//            testView.heightAnchor.constraint(equalToConstant: 1000)  // 스크롤이 가능하도록 테스트뷰 높이 설정
-//        ])
-//        
-//        self.scrollView = scrollView
-//        
-//        // 스크롤뷰의 콘텐츠 크기 설정
-//        DispatchQueue.main.async {
-//            scrollView.contentSize = CGSize(width: self.view.frame.width, height: 1000) // 테스트를 위한 고정된 크기
-//        }
-//        
-//        self.testView = testView
-//    }
     
     func setSheetView () {
         view.backgroundColor = self.customUIKitBottomSheetOption.sheetColor.getUIColor()
@@ -276,12 +236,7 @@ class CustomUIKitBottomSheet: UIViewController {
         
         self.handlerView = handlerView
     }
-    
-    func removeHandlerView() {
-        // handlerView가 존재하면 제거
-        handlerView?.removeFromSuperview()
-        handlerView = nil // 메모리 해제를 위해 nil로 설정
-    }
+
     
     func dismissPresent () {
         self.dismiss(animated: true)
@@ -295,25 +250,41 @@ class CustomUIKitBottomSheet: UIViewController {
         newHeight += topPadding
         
         var adjustedLength = min(max(newHeight, self.customUIKitBottomSheetOption.minimumHeight), self.customUIKitBottomSheetOption.maximumHeight)
-
-        if newHeight > UIScreen.main.bounds.height - topSafeAreaSize {
-            adjustedLength = UIScreen.main.bounds.height
-            self.removeHandlerView()
-        }
         
+        var contentSize:CGFloat = adjustedLength
+        print("1계산된 높이\(adjustedLength)")
+        if newHeight > UIScreen.main.bounds.height - (topSafeAreaSize + keyboardHeight) {
+            // 넘어섰을때
+            adjustedLength = UIScreen.main.bounds.height
+            if keyboardHeight > 0 {
+                adjustedLength = UIScreen.main.bounds.height - (keyboardHeight + topSafeAreaSize)
+            }
+            
+            print("2계산된 높이\(adjustedLength)")
+            
+            contentSize = newHeight
+
+            self.handlerView?.isHidden = true
+            self.scrollView?.isScrollEnabled = true
+        } else {
+            self.handlerView?.isHidden = false
+            self.scrollView?.isScrollEnabled = false
+        }
+
         customModalPresentationController?.setSheetHeight(sheetHeight: adjustedLength)
         
         DispatchQueue.main.async {
-            self.scrollView?.contentSize = CGSize(width: self.view.frame.width, height: newHeight) // 테스트를 위한 고정된 크기
-            self.hostingController?.view.frame.size = CGSize(width: self.view.frame.width, height: newHeight)
+            self.scrollView?.contentSize = CGSize(width: self.view.frame.width, height: contentSize) // 테스트를 위한 고정된 크기
+            self.hostingController?.view.frame.size = CGSize(width: self.view.frame.width, height: contentSize)
+            
+            print("콘텐트 높이 \(self.scrollView?.contentSize.height) 호스팅뷰 \(self.hostingController?.view.frame)")
         }
-        print("스크롤뷰 \(scrollView?.frame) 콘텐트 높이 \(scrollView?.contentSize.height) 호스팅뷰 \(self.hostingController?.view.frame)")
+        
+
         DispatchQueue.main.async {
-            self.view.setNeedsLayout()
             self.view.layoutIfNeeded()
         }
     }
-    
 }
 
 extension CustomUIKitBottomSheet:UIViewControllerTransitioningDelegate {
@@ -323,6 +294,27 @@ extension CustomUIKitBottomSheet:UIViewControllerTransitioningDelegate {
     }
 }
 
+
+extension CustomUIKitBottomSheet:KeyboardManangerProtocol {
+    func keyBoardWillShow(notification: NSNotification, keyboardHeight: CGFloat) {
+        self.isKeyboardOpen = true
+        self.keyboardHeight = keyboardHeight
+//        self.view.frame.origin.y += -keyboardHeight
+        self.customModalPresentationController?.setKeyboardHeight(keyboardHeight: keyboardHeight)
+        
+        self.updateSheetHeight(newHeight: self.scrollView?.contentSize.height ?? 0)
+        
+    }
+    
+    func keyBoardWillHide(notification: NSNotification) {
+        print("닫힘")
+//        self.view.frame.origin.y -= -keyboardHeight
+        self.isKeyboardOpen = false
+        self.keyboardHeight = 0
+        self.customModalPresentationController?.setKeyboardHeight(keyboardHeight: keyboardHeight)
+        self.updateSheetHeight(newHeight: self.scrollView?.contentSize.height ?? 0)
+    }
+}
 
 class CustomScrollView: UIScrollView {
     // 스크롤뷰가 스크롤이 비활성화된 상태에서 터치 이벤트를 하위 뷰로 전달하도록 설정
