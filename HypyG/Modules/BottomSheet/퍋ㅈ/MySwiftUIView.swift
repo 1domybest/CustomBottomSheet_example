@@ -83,7 +83,6 @@ struct MySwiftUIView: View {
                 
                 TextField("asdad", text: $text3)
             }
-            
         }
         .background(
             GeometryReader { geo -> Color in
