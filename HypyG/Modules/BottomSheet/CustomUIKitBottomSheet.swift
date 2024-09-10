@@ -26,6 +26,8 @@ class CustomUIKitBottomSheet: UIViewController {
     var keyboardManager: KeyboardManager?
     var keyboardHeight: CGFloat = .zero
     var isKeyboardOpen: Bool = false
+    var lastSizeOfScrollViewContentHeight: CGFloat = .zero
+    var currentSizeOfScrollViewContentHeight: CGFloat = .zero
     
     var dragGesture: UIPanGestureRecognizer?
     
@@ -92,28 +94,34 @@ class CustomUIKitBottomSheet: UIViewController {
     @objc func handlePanGesture(_ gesture: UIPanGestureRecognizer) {
         guard let containerView = self.view else { return }
 
-        DispatchQueue.main.async {
-            let translation = gesture.translation(in: containerView)
-            let velocity = gesture.velocity(in: containerView)
+      
+        let translation = gesture.translation(in: containerView)
+        let velocity = gesture.velocity(in: containerView)
 
-            switch gesture.state {
-            case .began:
-                // 초기 터치 포인트와 시작 위치 저장
-                
+        switch gesture.state {
+        case .began:
+            // 초기 터치 포인트와 시작 위치 저장
+            DispatchQueue.main.async {
                 if self.isKeyboardOpen {
                     self.keyboardManager?.hideKeyboard()
-                } else {
-                    self.initialTouchPoint = containerView.frame.origin
                 }
-            case .changed:
+                
+                self.initialTouchPoint = containerView.frame.origin
+            }
+           
+        case .changed:
+            DispatchQueue.main.async {
                 if self.isKeyboardOpen { return }
                 // 바텀 시트의 새로운 y 위치를 계산
                 if let initialTouchPoint = self.initialTouchPoint, translation.y > 0 {
                     // 드래그에 따라 y 위치를 업데이트 (최초 위치 + 드래그 이동 거리)
                     containerView.frame.origin.y = initialTouchPoint.y + translation.y
                 }
+            }
+           
 
-            case .ended, .cancelled:
+        case .ended, .cancelled:
+            DispatchQueue.main.async {
                 if self.isKeyboardOpen { return }
                 
                 let velocityThreshold: CGFloat = 1000 // 속도 기준 값 설정 (점프 스냅에 사용)
@@ -129,13 +137,15 @@ class CustomUIKitBottomSheet: UIViewController {
                 // 그렇지 않으면 다시 제자리로 돌아가도록 애니메이션 처리
                 else {
                     UIView.animate(withDuration: 0.3) {
+                        print("등록된 y2 \(self.initialTouchPoint?.y)")
                         containerView.frame.origin.y = self.initialTouchPoint?.y ?? 0
                     }
                 }
-
-            default:
-                break
             }
+           
+
+        default:
+            break
         }
         
     }
@@ -179,11 +189,17 @@ class CustomUIKitBottomSheet: UIViewController {
         scrollView.showsVerticalScrollIndicator = true
         view.addSubview(scrollView)
         
+        var topPadding = self.customUIKitBottomSheetOption.showHandler ? 40.0 : 28.0
+        
+        if self.customUIKitBottomSheetOption.sheetMode != .custom {
+            topPadding = 0
+        }
+        
         // 오토레이아웃 설정
         NSLayoutConstraint.activate([
             scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+            scrollView.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             scrollView.widthAnchor.constraint(equalTo: view.widthAnchor)  // 가로 스크롤 방지
         ])
@@ -243,6 +259,8 @@ class CustomUIKitBottomSheet: UIViewController {
     }
     
     func updateSheetHeight(newHeight: CGFloat) {
+        print("새로운 높이\(newHeight)") // 705
+        self.currentSizeOfScrollViewContentHeight = newHeight
         var newHeight = newHeight
         
         // 이곳에서 max확인해야함
@@ -255,7 +273,7 @@ class CustomUIKitBottomSheet: UIViewController {
         print("1계산된 높이\(adjustedLength)")
         if newHeight > UIScreen.main.bounds.height - (topSafeAreaSize + keyboardHeight) {
             // 넘어섰을때
-            adjustedLength = UIScreen.main.bounds.height
+            adjustedLength = UIScreen.main.bounds.height - topSafeAreaSize
             if keyboardHeight > 0 {
                 adjustedLength = UIScreen.main.bounds.height - (keyboardHeight + topSafeAreaSize)
             }
@@ -264,7 +282,7 @@ class CustomUIKitBottomSheet: UIViewController {
             
             contentSize = newHeight
 
-            self.handlerView?.isHidden = true
+//            self.handlerView?.isHidden = true
             self.scrollView?.isScrollEnabled = true
         } else {
             self.handlerView?.isHidden = false
@@ -297,22 +315,24 @@ extension CustomUIKitBottomSheet:UIViewControllerTransitioningDelegate {
 
 extension CustomUIKitBottomSheet:KeyboardManangerProtocol {
     func keyBoardWillShow(notification: NSNotification, keyboardHeight: CGFloat) {
-        self.isKeyboardOpen = true
-        self.keyboardHeight = keyboardHeight
-//        self.view.frame.origin.y += -keyboardHeight
-        self.customModalPresentationController?.setKeyboardHeight(keyboardHeight: keyboardHeight)
-        
-        self.updateSheetHeight(newHeight: self.scrollView?.contentSize.height ?? 0)
+        DispatchQueue.main.async {
+            self.isKeyboardOpen = true
+            self.lastSizeOfScrollViewContentHeight = self.currentSizeOfScrollViewContentHeight
+            self.keyboardHeight = keyboardHeight
+            self.customModalPresentationController?.setKeyboardHeight(keyboardHeight: keyboardHeight)
+            self.updateSheetHeight(newHeight: self.lastSizeOfScrollViewContentHeight)
+        }
         
     }
     
     func keyBoardWillHide(notification: NSNotification) {
-        print("닫힘")
-//        self.view.frame.origin.y -= -keyboardHeight
-        self.isKeyboardOpen = false
-        self.keyboardHeight = 0
-        self.customModalPresentationController?.setKeyboardHeight(keyboardHeight: keyboardHeight)
-        self.updateSheetHeight(newHeight: self.scrollView?.contentSize.height ?? 0)
+        DispatchQueue.main.async {
+            self.keyboardHeight = 0
+            self.customModalPresentationController?.setKeyboardHeight(keyboardHeight: self.keyboardHeight)
+            self.updateSheetHeight(newHeight: self.lastSizeOfScrollViewContentHeight)
+            self.isKeyboardOpen = false
+        }
+        
     }
 }
 
