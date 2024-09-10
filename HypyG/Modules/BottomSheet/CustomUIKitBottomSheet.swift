@@ -15,6 +15,7 @@ class CustomUIKitBottomSheet: UIViewController {
     
     private var initialTouchPoint: CGPoint?
     
+    var testView: UIView?
     var handlerView: UIView?
     var topSafeAreaSize: CGFloat = .zero
     var scrollView: UIScrollView?
@@ -163,33 +164,83 @@ class CustomUIKitBottomSheet: UIViewController {
             scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
             scrollView.topAnchor.constraint(equalTo: view.topAnchor),
             scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            scrollView.heightAnchor.constraint(equalTo: view.heightAnchor),
             scrollView.widthAnchor.constraint(equalTo: view.widthAnchor)  // 가로 스크롤 방지
         ])
         
         // SwiftUI View를 AnyView로 감싸서 사용
         let swiftUIView = self.customUIKitBottomSheetOption.someView
         let hostingController = UIHostingController(rootView: AnyView(swiftUIView))
+        hostingController.view.frame = CGRect(x: 0, y: 0, width: view.frame.width, height: self.customUIKitBottomSheetOption.sheetHeight)
         
-        
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
+//        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(hostingController.view)
         
         // SwiftUI 뷰 크기를 스크롤 뷰 안에 맞추는 오토레이아웃 설정
-        NSLayoutConstraint.activate([
-            hostingController.view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
-            hostingController.view.topAnchor.constraint(equalTo: scrollView.topAnchor),
-            hostingController.view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
-            hostingController.view.heightAnchor.constraint(equalTo: view.heightAnchor),
-            hostingController.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor)  // 가로 스크롤 방지
-        ])
+//        NSLayoutConstraint.activate([1236
+//            hostingController.view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+//            hostingController.view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+//            hostingController.view.topAnchor.constraint(equalTo: scrollView.topAnchor),
+//            hostingController.view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+////            hostingController.view.heightAnchor.constraint(equalTo: view.heightAnchor),
+//            hostingController.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor)  // 가로 스크롤 방지
+//        ])
+//        NSLayoutConstraint.activate([
+//            hostingController.view.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+//            hostingController.view.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+//            hostingController.view.topAnchor.constraint(equalTo: scrollView.topAnchor),
+//            hostingController.view.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+//            hostingController.view.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+//            hostingController.view.heightAnchor.constraint(equalTo: scrollView.heightAnchor)  // 스크롤이 가능하도록 테스트뷰 높이 설정
+//        ])
         
-        addChild(hostingController)
-        hostingController.didMove(toParent: self)
+//        addChild(hostingController)
+//        hostingController.didMove(toParent: self)
         self.hostingController = hostingController
         self.scrollView = scrollView
     }
+    
+//    func setupScrollView() {
+//        let scrollView = CustomScrollView()
+//        scrollView.isScrollEnabled = true
+//        scrollView.translatesAutoresizingMaskIntoConstraints = false
+//        scrollView.alwaysBounceVertical = true
+//        scrollView.showsVerticalScrollIndicator = true
+//        view.addSubview(scrollView)
+//        
+//        // 오토레이아웃 설정
+//        NSLayoutConstraint.activate([
+//            scrollView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//            scrollView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//            scrollView.topAnchor.constraint(equalTo: view.topAnchor),
+//            scrollView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+//            scrollView.widthAnchor.constraint(equalTo: view.widthAnchor)  // 가로 스크롤 방지
+//        ])
+//        
+//        // 테스트용 UIView 생성 및 추가
+//        let testView = UIView()
+//        testView.backgroundColor = .red  // 시각적으로 확인할 수 있도록 색상 설정
+//        testView.translatesAutoresizingMaskIntoConstraints = false
+//        scrollView.addSubview(testView)
+//        
+//        // 오토레이아웃 설정 (contentSize가 커지도록 설정)
+//        NSLayoutConstraint.activate([
+//            testView.leadingAnchor.constraint(equalTo: scrollView.leadingAnchor),
+//            testView.trailingAnchor.constraint(equalTo: scrollView.trailingAnchor),
+//            testView.topAnchor.constraint(equalTo: scrollView.topAnchor),
+//            testView.bottomAnchor.constraint(equalTo: scrollView.bottomAnchor),
+//            testView.widthAnchor.constraint(equalTo: scrollView.widthAnchor),
+//            testView.heightAnchor.constraint(equalToConstant: 1000)  // 스크롤이 가능하도록 테스트뷰 높이 설정
+//        ])
+//        
+//        self.scrollView = scrollView
+//        
+//        // 스크롤뷰의 콘텐츠 크기 설정
+//        DispatchQueue.main.async {
+//            scrollView.contentSize = CGSize(width: self.view.frame.width, height: 1000) // 테스트를 위한 고정된 크기
+//        }
+//        
+//        self.testView = testView
+//    }
     
     func setSheetView () {
         view.backgroundColor = self.customUIKitBottomSheetOption.sheetColor.getUIColor()
@@ -252,6 +303,10 @@ class CustomUIKitBottomSheet: UIViewController {
         
         customModalPresentationController?.setSheetHeight(sheetHeight: adjustedLength)
         
+        DispatchQueue.main.async {
+            self.scrollView?.contentSize = CGSize(width: self.view.frame.width, height: newHeight) // 테스트를 위한 고정된 크기
+            self.hostingController?.view.frame.size = CGSize(width: self.view.frame.width, height: newHeight)
+        }
         print("스크롤뷰 \(scrollView?.frame) 콘텐트 높이 \(scrollView?.contentSize.height) 호스팅뷰 \(self.hostingController?.view.frame)")
         DispatchQueue.main.async {
             self.view.setNeedsLayout()
