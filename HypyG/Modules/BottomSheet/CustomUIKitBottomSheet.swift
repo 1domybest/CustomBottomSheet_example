@@ -97,18 +97,21 @@ class CustomUIKitBottomSheet: UIViewController {
       
         let translation = gesture.translation(in: containerView)
         let velocity = gesture.velocity(in: containerView)
-
+        
+        
+        
         switch gesture.state {
         case .began:
             // 초기 터치 포인트와 시작 위치 저장
             DispatchQueue.main.async {
                 if self.isKeyboardOpen {
                     self.keyboardManager?.hideKeyboard()
+                    return
+                } else {
+                    self.initialTouchPoint = containerView.frame.origin
                 }
-                
-                self.initialTouchPoint = containerView.frame.origin
             }
-           
+            
         case .changed:
             DispatchQueue.main.async {
                 if self.isKeyboardOpen { return }
@@ -137,7 +140,6 @@ class CustomUIKitBottomSheet: UIViewController {
                 // 그렇지 않으면 다시 제자리로 돌아가도록 애니메이션 처리
                 else {
                     UIView.animate(withDuration: 0.3) {
-                        print("등록된 y2 \(self.initialTouchPoint?.y)")
                         containerView.frame.origin.y = self.initialTouchPoint?.y ?? 0
                     }
                 }
@@ -147,36 +149,6 @@ class CustomUIKitBottomSheet: UIViewController {
         default:
             break
         }
-        
-    }
-
-    func setHostingView () {
-        // SwiftUI View를 UIHostingController로 감쌈
-        let swiftUIView = self.customUIKitBottomSheetOption.someView
-
-        let hostingController = UIHostingController(rootView: swiftUIView)
-        
-        // HostingController 추가
-        addChild(hostingController) // 자식 ViewController로 추가
-        
-        hostingController.view.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(hostingController.view) // 뷰 계층에 추가
-        
-        var topPadding = self.customUIKitBottomSheetOption.showHandler ? 40.0 : 28.0
-        
-        if self.customUIKitBottomSheetOption.sheetMode != .custom {
-            topPadding = 0
-        }
-        
-        // AutoLayout 제약 추가 (UIViewController에 맞추어 SwiftUI 뷰 크기 조절)
-        NSLayoutConstraint.activate([
-            hostingController.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            hostingController.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            hostingController.view.topAnchor.constraint(equalTo: view.topAnchor, constant: topPadding),
-            hostingController.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        
-        hostingController.didMove(toParent: self) // 이동 완료
         
     }
     
@@ -259,7 +231,6 @@ class CustomUIKitBottomSheet: UIViewController {
     }
     
     func updateSheetHeight(newHeight: CGFloat) {
-        print("새로운 높이\(newHeight)") // 705
         self.currentSizeOfScrollViewContentHeight = newHeight
         var newHeight = newHeight
         
@@ -270,7 +241,7 @@ class CustomUIKitBottomSheet: UIViewController {
         var adjustedLength = min(max(newHeight, self.customUIKitBottomSheetOption.minimumHeight), self.customUIKitBottomSheetOption.maximumHeight)
         
         var contentSize:CGFloat = adjustedLength
-        print("1계산된 높이\(adjustedLength)")
+
         if newHeight > UIScreen.main.bounds.height - (topSafeAreaSize + keyboardHeight) {
             // 넘어섰을때
             adjustedLength = UIScreen.main.bounds.height - topSafeAreaSize
@@ -278,29 +249,17 @@ class CustomUIKitBottomSheet: UIViewController {
                 adjustedLength = UIScreen.main.bounds.height - (keyboardHeight + topSafeAreaSize)
             }
             
-            print("2계산된 높이\(adjustedLength)")
-            
             contentSize = newHeight
 
-//            self.handlerView?.isHidden = true
             self.scrollView?.isScrollEnabled = true
         } else {
-            self.handlerView?.isHidden = false
             self.scrollView?.isScrollEnabled = false
         }
 
-        customModalPresentationController?.setSheetHeight(sheetHeight: adjustedLength)
-        
         DispatchQueue.main.async {
+            self.customModalPresentationController?.setSheetHeight(sheetHeight: adjustedLength)
             self.scrollView?.contentSize = CGSize(width: self.view.frame.width, height: contentSize) // 테스트를 위한 고정된 크기
             self.hostingController?.view.frame.size = CGSize(width: self.view.frame.width, height: contentSize)
-            
-            print("콘텐트 높이 \(self.scrollView?.contentSize.height) 호스팅뷰 \(self.hostingController?.view.frame)")
-        }
-        
-
-        DispatchQueue.main.async {
-            self.view.layoutIfNeeded()
         }
     }
 }
@@ -318,6 +277,7 @@ extension CustomUIKitBottomSheet:KeyboardManangerProtocol {
         DispatchQueue.main.async {
             self.isKeyboardOpen = true
             self.lastSizeOfScrollViewContentHeight = self.currentSizeOfScrollViewContentHeight
+            self.initialTouchPoint = self.view.frame.origin
             self.keyboardHeight = keyboardHeight
             self.customModalPresentationController?.setKeyboardHeight(keyboardHeight: keyboardHeight)
             self.updateSheetHeight(newHeight: self.lastSizeOfScrollViewContentHeight)

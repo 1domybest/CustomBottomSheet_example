@@ -31,15 +31,6 @@ class CustomModalPresentationController: UIPresentationController {
     
     func setKeyboardHeight(keyboardHeight: CGFloat) {
         self.keyboardHeight = keyboardHeight
-        
-//        // Notify that the layout should be updated
-//        if let containerView = self.containerView {
-//            UIView.animate(withDuration: 0.3) {
-//                self.presentedView?.frame = self.frameOfPresentedViewInContainerView
-//                containerView.setNeedsLayout()
-//                containerView.layoutIfNeeded()
-//            }
-//        }
     }
     
     // 바텀 시트 스타일을 위한 높이 설정

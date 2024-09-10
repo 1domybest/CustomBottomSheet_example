@@ -99,8 +99,8 @@ struct MySwiftUIView: View {
                 return Color.clear
             }
         )
-        .ignoresSafeArea(.all)
-        .ignoresSafeArea(.keyboard)
+//        .ignoresSafeArea(.all)
+//        .ignoresSafeArea(.keyboard)
        
         
     }
@@ -127,7 +127,7 @@ class MySwiftUIViewModel: ObservableObject {
         self.bottomSheetOption = bottomSheetModel
         self.bottomSheetOption?.minimumHeight = 0
         self.bottomSheetOption?.backgroundColor = .blue.opacity(0.5)
-        self.bottomSheetOption?.availableOutTouchClose = false
+        self.bottomSheetOption?.availableOutTouchClose = true
         self.bottomSheetOption?.sheetColor = .red
         self.bottomSheetOption?.handlerColor = .black
         self.bottomSheetOption?.dragAvailable = true
