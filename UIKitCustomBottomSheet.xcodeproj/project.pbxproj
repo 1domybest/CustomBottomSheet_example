@@ -33,6 +33,8 @@
 		D13360FF2CAE741000CA7B00 /* CustomNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13360FE2CAE741000CA7B00 /* CustomNavigationController.swift */; };
 		D19871802D13B05C0040AFBB /* KeyboardManager in Frameworks */ = {isa = PBXBuildFile; productRef = D198717F2D13B05C0040AFBB /* KeyboardManager */; };
 		D198718C2D13B3C70040AFBB /* CustomBottomSheetLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = D198718B2D13B3C70040AFBB /* CustomBottomSheetLibrary */; };
+		D19871922D13C42D0040AFBB /* CustomTextFieldLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = D19871912D13C42D0040AFBB /* CustomTextFieldLibrary */; };
+		D19871942D13C47B0040AFBB /* UIKitViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19871932D13C47B0040AFBB /* UIKitViewRepresentable.swift */; };
 		D2571BAEB70A67A492F2A8AC /* Pods_UIKitCustomBottomSheet.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B4E85F4F36F55A009799E97 /* Pods_UIKitCustomBottomSheet.framework */; };
 /* End PBXBuildFile section */
 
@@ -67,6 +69,7 @@
 		D13360FA2CAE73C100CA7B00 /* CustomHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomHostingController.swift; sourceTree = "<group>"; };
 		D13360FC2CAE73F800CA7B00 /* UIViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIViewController.swift; sourceTree = "<group>"; };
 		D13360FE2CAE741000CA7B00 /* CustomNavigationController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CustomNavigationController.swift; sourceTree = "<group>"; };
+		D19871932D13C47B0040AFBB /* UIKitViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UIKitViewRepresentable.swift; sourceTree = "<group>"; };
 		FDCA7FDC12A5B56D18D1B952 /* Pods-UIKitCustomBottomSheet.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-UIKitCustomBottomSheet.debug.xcconfig"; path = "Target Support Files/Pods-UIKitCustomBottomSheet/Pods-UIKitCustomBottomSheet.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -78,6 +81,7 @@
 				D2571BAEB70A67A492F2A8AC /* Pods_UIKitCustomBottomSheet.framework in Frameworks */,
 				D19871802D13B05C0040AFBB /* KeyboardManager in Frameworks */,
 				D198718C2D13B3C70040AFBB /* CustomBottomSheetLibrary in Frameworks */,
+				D19871922D13C42D0040AFBB /* CustomTextFieldLibrary in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -233,6 +237,7 @@
 		D13360ED2CAE6E8000CA7B00 /* Modules */ = {
 			isa = PBXGroup;
 			children = (
+				D19871932D13C47B0040AFBB /* UIKitViewRepresentable.swift */,
 				D122B6292D116B8100E74B2F /* Main */,
 				D122B6282D116B7400E74B2F /* BottomSheet */,
 			);
@@ -313,6 +318,7 @@
 			packageReferences = (
 				D198717E2D13B05C0040AFBB /* XCRemoteSwiftPackageReference "KeyboardManagerLibrary" */,
 				D198718A2D13B3C70040AFBB /* XCRemoteSwiftPackageReference "CustomBottomSheetLibrary" */,
+				D19871902D13C42D0040AFBB /* XCRemoteSwiftPackageReference "CustomTextFieldLibrary" */,
 			);
 			productRefGroup = D13360C22CAE6CBC00CA7B00 /* Products */;
 			projectDirPath = "";
@@ -382,6 +388,7 @@
 				D13360FF2CAE741000CA7B00 /* CustomNavigationController.swift in Sources */,
 				D122B62F2D116B9800E74B2F /* MainViewModel.swift in Sources */,
 				D13360F22CAE6EC600CA7B00 /* NavigationControllerEnum.swift in Sources */,
+				D19871942D13C47B0040AFBB /* UIKitViewRepresentable.swift in Sources */,
 				D122B60D2D11665800E74B2F /* Double.swift in Sources */,
 				D13360F92CAE6F3500CA7B00 /* Environment+NavigationController.swift in Sources */,
 				D13360F62CAE6F0500CA7B00 /* NavigationCallbackProtocol.swift in Sources */,
@@ -633,6 +640,14 @@
 				minimumVersion = 1.0.4;
 			};
 		};
+		D19871902D13C42D0040AFBB /* XCRemoteSwiftPackageReference "CustomTextFieldLibrary" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/1domybest/CustomTextFieldLibrary";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.0.1;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -645,6 +660,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = D198718A2D13B3C70040AFBB /* XCRemoteSwiftPackageReference "CustomBottomSheetLibrary" */;
 			productName = CustomBottomSheetLibrary;
+		};
+		D19871912D13C42D0040AFBB /* CustomTextFieldLibrary */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = D19871902D13C42D0040AFBB /* XCRemoteSwiftPackageReference "CustomTextFieldLibrary" */;
+			productName = CustomTextFieldLibrary;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

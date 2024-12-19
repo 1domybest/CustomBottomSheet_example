@@ -23,9 +23,8 @@ struct CustomBottomSheetView: View {
                     .foregroundColor(.red)
                     .padding()
                 
-                TextField("텍스트 필드1", text: $vm.text2)
-                    .foregroundColor(.red)
-                    .background(Color.gray)
+                UIKitViewRepresentable(view: self.vm.textViewView)
+                    .frame(height: self.vm.textViewHeight)
                 
                 Button(action: {
                     vm.extraHeight += 100
@@ -39,9 +38,8 @@ struct CustomBottomSheetView: View {
                         .cornerRadius(10)
                 }
                 
-                TextField("텍스트 필드2", text: $vm.text)
-                    .foregroundColor(.red)
-                    .background(Color.gray)
+                UIKitViewRepresentable(view: self.vm.textFieldView)
+                    .frame(height: 50)
                 
                 Button(action: {
 //                    CustomBottomSheetSingleTone.shared.hide(pk: pk)
