@@ -8,7 +8,7 @@
 import Foundation
 import SwiftUI
 import UIKit
-
+import CustomBottomSheetLibrary
 
 class MainViewModel: ObservableObject {
     var vmPK: UUID = UUID() // viewModel의 고유 pk
@@ -18,6 +18,7 @@ class MainViewModel: ObservableObject {
     }
     
     
+    @MainActor
     func openSwiftUIBottomSheet() {
         let bottomSheetPk = UUID()
         
@@ -38,11 +39,13 @@ class MainViewModel: ObservableObject {
     }
     
     /// 바텀시트 열기
+    @MainActor
     func openBottomSheet(bottomSheetOption: CustomUIKitBottomSheetOption) {
         CustomBottomSheetSingleTone.shared.show(customUIKitBottomSheetOption: bottomSheetOption, sheetPk: bottomSheetOption.pk, viewPk: self.vmPK)
     }
     
     /// 열려있는 모든 바텀시트 닫기
+    @MainActor
     func hideAllBottomSheet() {
         CustomBottomSheetSingleTone.shared.hideAll(viewPk: self.vmPK, animated: false)
     }

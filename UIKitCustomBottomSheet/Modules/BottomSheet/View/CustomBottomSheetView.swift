@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import CustomBottomSheetLibrary
 
 struct CustomBottomSheetView: View {
     @ObservedObject var vm:CustomBottomSheetViewModel
