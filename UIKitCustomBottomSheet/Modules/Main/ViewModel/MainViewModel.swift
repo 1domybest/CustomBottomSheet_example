@@ -18,6 +18,7 @@ class MainViewModel: ObservableObject {
     }
     
     
+    /// 내가 원하는 SwiftUI를 넣고 바텀시트 열기
     @MainActor
     func openSwiftUIBottomSheet() {
         let bottomSheetPk = UUID()
@@ -38,7 +39,7 @@ class MainViewModel: ObservableObject {
         self.openBottomSheet(bottomSheetOption: bottomSheetOption)
     }
     
-    /// 바텀시트 열기
+    /// 바텀시트 open 공통 모듈
     @MainActor
     func openBottomSheet(bottomSheetOption: CustomUIKitBottomSheetOption) {
         CustomBottomSheetSingleTone.shared.show(customUIKitBottomSheetOption: bottomSheetOption, sheetPk: bottomSheetOption.pk, viewPk: self.vmPK)

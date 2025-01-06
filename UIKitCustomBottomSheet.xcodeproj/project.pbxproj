@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		D120D8462D2BBAAC0074D744 /* KeyboardManager in Frameworks */ = {isa = PBXBuildFile; productRef = D120D8452D2BBAAC0074D744 /* KeyboardManager */; };
 		D122B5F12D11613C00E74B2F /* Push.swift in Sources */ = {isa = PBXBuildFile; fileRef = D122B5F02D11613C00E74B2F /* Push.swift */; };
 		D122B5F32D11613D00E74B2F /* Pop.swift in Sources */ = {isa = PBXBuildFile; fileRef = D122B5F22D11613D00E74B2F /* Pop.swift */; };
 		D122B6042D11657500E74B2F /* CustomBottomSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D122B6022D11657500E74B2F /* CustomBottomSheetView.swift */; };
@@ -31,7 +32,6 @@
 		D13360FB2CAE73C100CA7B00 /* CustomHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13360FA2CAE73C100CA7B00 /* CustomHostingController.swift */; };
 		D13360FD2CAE73F800CA7B00 /* UIViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13360FC2CAE73F800CA7B00 /* UIViewController.swift */; };
 		D13360FF2CAE741000CA7B00 /* CustomNavigationController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D13360FE2CAE741000CA7B00 /* CustomNavigationController.swift */; };
-		D19871802D13B05C0040AFBB /* KeyboardManager in Frameworks */ = {isa = PBXBuildFile; productRef = D198717F2D13B05C0040AFBB /* KeyboardManager */; };
 		D198718C2D13B3C70040AFBB /* CustomBottomSheetLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = D198718B2D13B3C70040AFBB /* CustomBottomSheetLibrary */; };
 		D19871922D13C42D0040AFBB /* CustomTextFieldLibrary in Frameworks */ = {isa = PBXBuildFile; productRef = D19871912D13C42D0040AFBB /* CustomTextFieldLibrary */; };
 		D19871942D13C47B0040AFBB /* UIKitViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = D19871932D13C47B0040AFBB /* UIKitViewRepresentable.swift */; };
@@ -79,9 +79,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				D2571BAEB70A67A492F2A8AC /* Pods_UIKitCustomBottomSheet.framework in Frameworks */,
-				D19871802D13B05C0040AFBB /* KeyboardManager in Frameworks */,
 				D198718C2D13B3C70040AFBB /* CustomBottomSheetLibrary in Frameworks */,
 				D19871922D13C42D0040AFBB /* CustomTextFieldLibrary in Frameworks */,
+				D120D8462D2BBAAC0074D744 /* KeyboardManager in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -316,9 +316,9 @@
 			);
 			mainGroup = D13360B82CAE6CBC00CA7B00;
 			packageReferences = (
-				D198717E2D13B05C0040AFBB /* XCRemoteSwiftPackageReference "KeyboardManagerLibrary" */,
 				D198718A2D13B3C70040AFBB /* XCRemoteSwiftPackageReference "CustomBottomSheetLibrary" */,
 				D19871902D13C42D0040AFBB /* XCRemoteSwiftPackageReference "CustomTextFieldLibrary" */,
+				D120D8442D2BBAAC0074D744 /* XCRemoteSwiftPackageReference "KeyboardManagerLibrary" */,
 			);
 			productRefGroup = D13360C22CAE6CBC00CA7B00 /* Products */;
 			projectDirPath = "";
@@ -624,12 +624,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		D198717E2D13B05C0040AFBB /* XCRemoteSwiftPackageReference "KeyboardManagerLibrary" */ = {
+		D120D8442D2BBAAC0074D744 /* XCRemoteSwiftPackageReference "KeyboardManagerLibrary" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/1domybest/KeyboardManagerLibrary.git";
 			requirement = {
 				kind = upToNextMajorVersion;
-				minimumVersion = 1.0.0;
+				minimumVersion = 1.0.1;
 			};
 		};
 		D198718A2D13B3C70040AFBB /* XCRemoteSwiftPackageReference "CustomBottomSheetLibrary" */ = {
@@ -651,9 +651,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		D198717F2D13B05C0040AFBB /* KeyboardManager */ = {
+		D120D8452D2BBAAC0074D744 /* KeyboardManager */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = D198717E2D13B05C0040AFBB /* XCRemoteSwiftPackageReference "KeyboardManagerLibrary" */;
+			package = D120D8442D2BBAAC0074D744 /* XCRemoteSwiftPackageReference "KeyboardManagerLibrary" */;
 			productName = KeyboardManager;
 		};
 		D198718B2D13B3C70040AFBB /* CustomBottomSheetLibrary */ = {
