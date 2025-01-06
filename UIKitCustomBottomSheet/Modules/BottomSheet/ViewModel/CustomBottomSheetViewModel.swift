@@ -12,36 +12,52 @@ import KeyboardManager
 import CustomTextFieldLibrary
 
 class CustomBottomSheetViewModel: ObservableObject {
+    /// 자신을 호출한 부모에서 생성한 자식의 고유 pk
+    var pk: UUID
+    
+    /// 바텀시트에서 사용하는 옵션
     var bottomSheetOption: CustomUIKitBottomSheetOption?
-    var navigationController: NavigationController? // 네비게이션
+    
+    /// 네비게이션
+    var navigationController: NavigationController?
+    
+    /// 커스텀  바텀시트 [키보드 관련 이벤트를 받기위함]
     var customUIKitBottomSheet: CustomUIKitBottomSheet?
+    
+    /// 키보드 매니저
     var keyboardManager: KeyboardManager?
     
-    var pk: UUID // 자신을 호출한 부모에서 생성한 자식의 고유 pk
-    var hasChild: Bool = false // 자기자신이 또다른 바텀시트가 있는지에대한 여부
+    /// 자기자신이 또다른 바텀시트가 있는지에대한 여부
+    var hasChild: Bool = false
     
     /// 키보드관련 변수
-    var lastOffset: CGFloat = .zero // 마지막 스크롤 오프셋
-    var isUpScrolling: Bool = false // 위로 스크롤하는지에대한 여부
     
+    /// 마지막 스크롤 오프셋
+    var lastOffset: CGFloat = .zero
+    /// 위로 스크롤하는지에대한 여부
+    var isUpScrolling: Bool = false
     
-    @Published var lastHeight: CGFloat = .zero // 마지막 바텀시트의 높이
-    @Published var extraHeight: CGFloat = .zero // 현재 바텀시트의 높이
-    
-    @Published var text: String = "" // 텍스트 필드 1
-    @Published var text2: String = "" // 텍스트 필드 2
-    @Published var text3: String = "" // 텍스트 필드 3
+    /// 마지막 바텀시트의 높이
+    @Published var lastHeight: CGFloat = .zero
+    /// 현재 바텀시트의 높이
+    @Published var extraHeight: CGFloat = .zero
     
     /* 텍스트 필드 */
+    
+    /// 텍스트 필드 UIView
     var textFieldView: SingleTextFieldContentView?
-    @Published var textFieldText:String = "" // 제목 텍스트
+    /// 바인딩할 제목 텍스트 필드  변수
+    @Published var textFieldText:String = ""
     
     /* 텍스트 뷰 */
-    var textViewView: SingleTextViewContentView?
-    @Published var textViewHeight:CGFloat = 40 // 웰컴코멘트 동적 높이
-    @Published var textViewText:String = "" // 웰컴코멘트 텍스트
     
-
+    /// 텍스트 뷰 UIView
+    var textViewView: SingleTextViewContentView?
+    
+    /// 텍스트 뷰 동적 높이
+    @Published var textViewHeight:CGFloat = 40
+    /// 바인딩할 제목 텍스트 뷰  변수
+    @Published var textViewText:String = "" // 웰컴코멘트 텍스트
     
     init(pk: UUID) {
         self.pk = pk
@@ -50,9 +66,9 @@ class CustomBottomSheetViewModel: ObservableObject {
         self.initializeField()
     }
     
+    /// 텍스트 빌드 & 뷰 초기화 함수
     func initializeField () {
 
-        
         var textViewOption = SingleTextViewOption()
         textViewOption.backgroundColor = .clear
         textViewOption.textColor = .white
@@ -96,10 +112,12 @@ class CustomBottomSheetViewModel: ObservableObject {
         self.textFieldView = SingleTextFieldContentView(singleTextFieldOption: textFieldOption)
     }
     
+    /// SwiftUI View가 렌더링된후 받아온 네비게이션은 VM에 저장하여 이곳에서도 push, pop이 가능하도록 하기위한 함수
     func setNavigationController(navigationController: NavigationController) {
         self.navigationController = navigationController
     }
     
+    /// 추가 시트 오픈 [자식의 자식시트를 위한 함수]
     func openSheet() {
         DispatchQueue.main.async {
             let pk = UUID()
@@ -126,8 +144,11 @@ class CustomBottomSheetViewModel: ObservableObject {
         
     }
     
+    /// SwiftUI View가 onViewAppear됬을때 사용할 함수
     func onViewAppear() {
         DispatchQueue.main.async {
+            /// 이곳에서 scroll관련 콜백함수를 등록하는 이유는 타이밍이슈로인해 정상적으로 스크롤 딜리게이트가 등록되지않을수도있다
+            /// 그렇기에 완전히 render된후에 등록
             if self.customUIKitBottomSheet == nil {
                 self.customUIKitBottomSheet = CustomBottomSheetSingleTone.shared.findBottomSheet(pk: self.pk)
                 self.customUIKitBottomSheet?.customUIKitBottomSheetOption?.onScrolling = { [weak self] offset in
@@ -157,12 +178,13 @@ class CustomBottomSheetViewModel: ObservableObject {
         }
     }
     
+    /// SwiftUI View가 dissmiss 됬을시 사용할 함수
     func onViewDisAppear() {
-//        self.unreference()
     }
 }
 
 
+/// 키보드 매니저 딜리게이트
 extension CustomBottomSheetViewModel: KeyboardManangerProtocol {
     func keyBoardWillShow(notification: NSNotification, keyboardHeight: CGFloat) {
         print("키보드 열림")

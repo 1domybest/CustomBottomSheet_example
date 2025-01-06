@@ -42,16 +42,27 @@ struct CustomBottomSheetView: View {
                     .frame(height: 50)
                 
                 Button(action: {
-//                    CustomBottomSheetSingleTone.shared.hide(pk: pk)
-                    self.vm.keyboardManager?.hideKeyboard()
+                    CustomBottomSheetSingleTone.shared.hide(pk: self.vm.pk)
                 }) {
-                    Text("닫기 버튼")
+                    Text("시트 닫기 버튼")
                         .font(.headline)
                         .padding()
                         .background(Color.blue)
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
+                
+                Button(action: {
+                    self.vm.keyboardManager?.hideKeyboard()
+                }) {
+                    Text("키보드닫기 버튼")
+                        .font(.headline)
+                        .padding()
+                        .background(Color.blue)
+                        .foregroundColor(.white)
+                        .cornerRadius(10)
+                }
+                
                 
                 Button(action: {
                     self.vm.openSheet()
@@ -77,8 +88,6 @@ struct CustomBottomSheetView: View {
                         .foregroundColor(.white)
                         .cornerRadius(10)
                 }
-                
-                TextField("asdad", text: $vm.text3)
             }
         }
         .background(
@@ -97,8 +106,6 @@ struct CustomBottomSheetView: View {
         )
         .ignoresSafeArea(.all)
         .ignoresSafeArea(.keyboard)
-       
-        
     }
 }
 
